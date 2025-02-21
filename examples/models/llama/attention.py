@@ -221,8 +221,6 @@ class AttentionMHA(Attention):
         bsz, seqlen, _ = x.shape
 
         # QKV
-        # breakpoint()
-        print("Calculating q_proj")
         q, k, v = self.wq(x), self.wk(x), self.wv(x)
         # We need view_copy elimination
         q = q.view(bsz, seqlen, self.n_local_heads, self.head_dim)

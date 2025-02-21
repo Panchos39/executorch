@@ -596,19 +596,6 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
         args=args,
     )
 
-    # # Override dtype of the model as specified by the user args.
-    # if dtype_override:
-    #     assert isinstance(
-    #         dtype_override, DType
-    #     ), "Override dtype needs to be of type <DType>"
-    #     torch_dtype = dtype_override.to_torch_dtype()
-    #     logging.info(f"model.to {torch_dtype}")
-    #     edge_manager.model = edge_manager.model.to(dtype=torch_dtype)
-    #     metadata_str=args.metadata,
-    #     dtype_override=dtype_override,
-    #     args=args,
-    # )
-
     # Assumes the checkpoint has uniform dtype.
     checkpoint_dtype = next(edge_manager.model.parameters()).dtype
     print(f"checkpoint dtype: {checkpoint_dtype}")
@@ -618,14 +605,6 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
             args.model, DType.from_torch_dtype(checkpoint_dtype), args
         )
     )
-
-    quantized = torch.load("/home/jackzhxng/torchrepos/executorch/fake_quantized_weights.pt")
-    # Test run the model to trace.
-    edge_manager.model(
-        torch.tensor([[2, 3, 4]], dtype=torch.long),
-        {"input_pos": torch.tensor([0], dtype=torch.long)},
-    )
-    # torch.testing.assert_close()
 
     # We want to do compute the actual ops in the precision of the dtype_override.
     def _set_precision_to_fp32(module):
