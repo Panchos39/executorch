@@ -606,7 +606,9 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
         )
     )
 
-    # We want to do compute the actual ops in the precision of the dtype_override.
+    # We want to do compute the actual ops in the precision of the dtype_override,
+    # since the precision of the quantized linear will initially be the dtype of the
+    # checkpoint, not the dtype_override.
     def _set_precision_to_fp32(module):
         """
         Recursively iterate through the module and set the precision attribute
