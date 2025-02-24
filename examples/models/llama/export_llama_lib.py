@@ -598,7 +598,7 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
 
     # Assumes the checkpoint has uniform dtype.
     checkpoint_dtype = next(edge_manager.model.parameters()).dtype
-    print(f"checkpoint dtype: {checkpoint_dtype}")
+    logging.info(f"checkpoint dtype: {checkpoint_dtype}")
     # We want to quantize the weights of the model in the checkpoint dtype.
     edge_manager = edge_manager.set_output_dir(output_dir_path).source_transform(
         _get_source_transforms(
