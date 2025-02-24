@@ -15,10 +15,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from executorch.backends.vulkan._passes import VkInt4WeightOnlyQuantizer
-
 from executorch.extension.llm.export.builder import DType
 
 from sentencepiece import SentencePieceProcessor
+from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
+
 
 try:
     from fairseq2.nn.embedding import (
@@ -825,6 +826,30 @@ def _load_torchao_aten_lib(libname):
     ), f"Expected 1 library but got {len(libs)}.  If you installed the torchao ops in a non-standard location, please set CMAKE_INSTALL_PREFIX correctly."
     logging.info(f"Loading custom ops library: {libs[0]}")
     torch.ops.load_library(libs[0])
+
+
+# We want to do compute the actual ops in the dtype of the dtype_override,
+# since the precision of the quantized linear will initially be the dtype of the
+# checkpoint, not the dtype_override.
+# TODO(#8652): this is a temporary solution for until we can support the new ao,
+# quantize_ api, which apparently can support different dtypes at quantization and
+# computation.
+def _set_quantized_computation_dtype(module: nn.Module, dtype: torch.dtype):
+    """
+    Recursively iterate through the module and set the dtype/precision attributes
+    of all Int8DynActInt4WeightLinear and QuantizedGroupEmbedding submodules to 'fp32'.
+    """
+    for name, child in module.named_children():
+        if isinstance(child, Int8DynActInt4WeightLinear):
+            # Change the precision attribute to 'fp32'
+            child.precision = dtype
+            print(f"Changed precision of {name} to {dtype}")
+        elif isinstance(child, QuantizedGroupEmbedding):
+            child.dtype = dtype
+            print(f"Changed precision of {name} to {dtype}")
+        else:
+            # Recursively apply to child modules
+            _set_quantized_computation_dtype(child, dtype)
 
 
 ############################ Source Transform End #######################

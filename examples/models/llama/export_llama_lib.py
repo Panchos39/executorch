@@ -46,7 +46,6 @@ from executorch.extension.llm.export.quantizer_lib import (
     get_vulkan_quantizer,
 )
 from executorch.util.activation_memory_profiler import generate_memory_trace
-from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from ..model_factory import EagerModelFactory
 from .source_transformation.apply_spin_quant_r1_r2 import (
@@ -56,9 +55,9 @@ from .source_transformation.apply_spin_quant_r1_r2 import (
 
 from .source_transformation.attention import replace_attention_to_attention_sha
 from .source_transformation.quantize import (
+    _set_quantized_computation_dtype,
     get_quant_embedding_transform,
     get_quant_weight_transform,
-    QuantizedGroupEmbedding,
 )
 from .source_transformation.quantized_kv_cache import (
     replace_kv_cache_with_custom_kv_cache,
@@ -606,27 +605,7 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
         )
     )
 
-    # We want to do compute the actual ops in the precision of the dtype_override,
-    # since the precision of the quantized linear will initially be the dtype of the
-    # checkpoint, not the dtype_override.
-    def _set_precision_to_fp32(module):
-        """
-        Recursively iterate through the module and set the precision attribute
-        of all Int8DynActInt4WeightLinear submodules to 'fp32'.
-        """
-        for name, child in module.named_children():
-            if isinstance(child, Int8DynActInt4WeightLinear):
-                # Change the precision attribute to 'fp32'
-                child.precision = torch.float32
-                print(f"Changed precision of {name} to torch.float32")
-            elif isinstance(child, QuantizedGroupEmbedding):
-                child.dtype = torch.float32
-                print(f"Changed precision of {name} to torch.float32")
-            else:
-                # Recursively apply to child modules
-                _set_precision_to_fp32(child)
-
-    _set_precision_to_fp32(edge_manager.model)
+    _set_quantized_computation_dtype(edge_manager.model, dtype_override.to_torch_dtype())
 
     return edge_manager
 
