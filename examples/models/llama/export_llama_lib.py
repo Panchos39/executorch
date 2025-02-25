@@ -605,7 +605,9 @@ def _prepare_for_llama_export(args) -> LLMEdgeManager:
         )
     )
 
-    _set_quantized_computation_dtype(edge_manager.model, dtype_override.to_torch_dtype())
+    _set_quantized_computation_dtype(
+        edge_manager.model, dtype_override.to_torch_dtype()
+    )
 
     return edge_manager
 
