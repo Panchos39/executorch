@@ -4,8 +4,6 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-unsafe
-
 from dataclasses import dataclass
 
 
@@ -26,14 +24,15 @@ MODEL_NAME_TO_OPTIONS = {
     "mv3": XNNPACKOptions(True, True),
     "resnet18": XNNPACKOptions(True, True),
     "resnet50": XNNPACKOptions(True, True),
-    "vit": XNNPACKOptions(True, True),
+    "vit": XNNPACKOptions(False, True),  # T161242362
     "w2l": XNNPACKOptions(True, True),
     "edsr": XNNPACKOptions(True, True),
-    "mobilebert": XNNPACKOptions(True, True),
+    "mobilebert": XNNPACKOptions(False, True),  # T197452682
     "llama2": XNNPACKOptions(False, True),
     "emformer_join": XNNPACKOptions(True, True),
-    "emformer_predict": XNNPACKOptions(True, True),
-    "emformer_transcribe": XNNPACKOptions(True, True),
+    "emformer_predict": XNNPACKOptions(False, True),  # T197457838
+    "emformer_transcribe": XNNPACKOptions(False, True),  # T197449765
+    "mmd_nca_net" : XNNPACKOptions(True, True)
 }
 
 
