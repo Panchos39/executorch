@@ -8,7 +8,8 @@ class SelfAttentiveEncoder(nn.Module):
     def __init__(self):
         super(SelfAttentiveEncoder, self).__init__()
         self.drop = nn.Dropout(0.5)
-        self.ws1 = nn.Linear(256, 20, bias=False)
+        #self.ws1 = nn.Linear(256, 20, bias=False)
+        self.ws1 = nn.Linear(128, 20, bias=False)
         self.ws2 = nn.Linear(20, 1, bias=False)
         self.tanh = nn.Tanh()
         self.softmax = nn.Softmax()
@@ -38,13 +39,15 @@ class A_LSTM(nn.Module):
         super(A_LSTM, self).__init__()
         # input size?
 #         self.lnlstm = LNLSTM(30,64,2)#input,output,layer num_layers=1
-        self.gru = nn.GRU(input_size=39, hidden_size=128,num_layers=2,bidirectional=True)
+        #self.gru = nn.GRU(input_size=39, hidden_size=128,num_layers=2,bidirectional=True)
+        self.gru = nn.GRU(input_size=39, hidden_size=128,num_layers=2,bidirectional=False)
         #self.bn1 = nn.BatchNorm1d(24)
         self.bn1 = nn.BatchNorm1d(sequence_size)
         #self.selfattention = SelfAttention(128)
         # fix attention output size to 25
         self.selfattention = SelfAttentiveEncoder()
-        self.fc1 = nn.Linear(256, 320)
+        #self.fc1 = nn.Linear(256, 320)
+        self.fc1 = nn.Linear(128, 320)
         self.bn2 = nn.BatchNorm1d(320)
         self.dropout1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(320, 320)
